@@ -243,7 +243,7 @@ run_spectrum <-  function ( dt = NULL, lambdas = NULL, id.survey=NULL, px = NULL
    write_excel_csv2 (df.intervalo, file =str_c ("./Data/procdata/power_ppfd_",id.s,"_", px,".csv"),
                      na = "NA", append = FALSE, delim = ";")
    
-   write_delim (df.intervalo, path = str_c ("./Data/procdata/power_ppfd_",id.s,"_", px,".txt"), 
+   write_delim (df.intervalo, file = str_c ("./Data/procdata/power_ppfd_",id.s,"_", px,".txt"), 
                 delim = ",", na = "NA")
    
    return (df.intervalo)
