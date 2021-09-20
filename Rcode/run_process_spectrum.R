@@ -66,7 +66,7 @@ dintegr <- tibble ( bandwidth = "total", l1 = 380, l2= 780)
 
 lambdas <- bind_rows (d1, d2, d3, d4, d5, d6, dPAR,dintegr  )
 
-df  = dist_espectral_uw_raw 
+dt  = dist_espectral_uw_raw 
 lambdas = lambdas
 px = "X"
 id.survey="este"
@@ -74,11 +74,14 @@ id.survey="este"
 
 run_spectrum <-  function ( dt = NULL, lambdas = NULL, id.survey=NULL, px = NULL) {
    
+   dir.create (file.path("Figures","power_dist.espectral"), showWarnings = FALSE)
+   dir.create (file.path("Data","procdata"), showWarnings = FALSE)
+   
    id.s <- id.survey
    px   <- px
    
    df.x <- dt %>%
-      dplyr::filter (punto== px)
+           dplyr::filter (punto == px)
    
    dt.1    <- df.x
    dt.lmbd <- lambdas
@@ -100,9 +103,9 @@ run_spectrum <-  function ( dt = NULL, lambdas = NULL, id.survey=NULL, px = NULL
    Nav <- 6.02e17 # photones/uMol
    
    dt.1.int.phot.total <- dt.1.int.total %>%
-      dplyr::mutate (photones_nm.s.cm2 = uW_nm.cm2*uW_a_W*lambda*lambda_nm_a_m/(hplanck*vluz)) %>%
-      dplyr::mutate (umolphotones_nm.s.cm2 = photones_nm.s.cm2/Nav) %>%
-      dplyr::mutate (umolphotones_nm.s.m2 = umolphotones_nm.s.cm2/1e-4)
+                          dplyr::mutate (photones_nm.s.cm2 = uW_nm.cm2*uW_a_W*lambda*lambda_nm_a_m/(hplanck*vluz)) %>%
+                          dplyr::mutate (umolphotones_nm.s.cm2 = photones_nm.s.cm2/Nav) %>%
+                          dplyr::mutate (umolphotones_nm.s.m2 = umolphotones_nm.s.cm2/1e-4)
    
    
    #dt.1.int.phot.total.seba  <- dt.1.int.total %>%
@@ -115,15 +118,15 @@ run_spectrum <-  function ( dt = NULL, lambdas = NULL, id.survey=NULL, px = NULL
    
    
    dt.lmbd.band <- dt.lmbd %>%
-      dplyr::filter (bandwidth != "PAR")%>%
-      dplyr::filter (bandwidth != "total")
+                   dplyr::filter (bandwidth != "PAR")%>%
+                   dplyr::filter (bandwidth != "total")
    
    list.band.1 <- dt.lmbd.band$bandwidth
    
    id.punto <- unique (df.x$punto)
    
    ### Este es el grafico de flujo de potencia 
-   svg (filename= str_c ("./Figures/power_dist.espectral_",id.s,"_", px,".svg"), 
+   svg (filename= str_c ("./Figures/power_dist.espectral/dist.espectral_",id.s,"_", px,".svg"), 
         width=7, 
         height=5, 
         pointsize=12)
@@ -187,26 +190,26 @@ run_spectrum <-  function ( dt = NULL, lambdas = NULL, id.survey=NULL, px = NULL
       #filt.band = "D1"
       
       dt.lmbd.x <- dt.lmbd %>%
-         dplyr::filter (bandwidth == filt.band)
+                   dplyr::filter (bandwidth == filt.band)
       
       dt.x1.band <- dt.1.int.phot.total  %>%
-         dplyr::filter ( lambda >= dt.lmbd.x$l1 ) %>% 
-         dplyr::filter ( lambda <= dt.lmbd.x$l2 ) %>%
-         dplyr::mutate ( bandwidth = filt.band) %>%
-         dplyr::select ( bandwidth, punto, lambda,  uW_nm.cm2 , umolphotones_nm.s.m2)
+                    dplyr::filter ( lambda >= dt.lmbd.x$l1 ) %>% 
+                    dplyr::filter ( lambda <= dt.lmbd.x$l2 ) %>%
+                    dplyr::mutate ( bandwidth = filt.band) %>%
+                    dplyr::select ( bandwidth, punto, lambda,  uW_nm.cm2 , umolphotones_nm.s.m2)
       
       dt.x2.band <-  dt.x1.band  %>%
          dplyr::filter (lambda != min(lambda)) %>%
          dplyr::select (c(lambda, uW_nm.cm2))
       
       dt.x3.band <-  dt.x1.band %>%
-         dplyr::filter (lambda != max(lambda)) %>%
-         dplyr::mutate (lmb.2 = dt.x2.band$lambda) %>%
-         dplyr::mutate (uW_nm.cm2.2 = dt.x2.band$uW_nm.cm2)%>%
-         dplyr::mutate (uW.cm2 = (lmb.2 - lambda) * uW_nm.cm2.2) %>%
-         dplyr::select (bandwidth, punto,lambda,lmb.2 , everything())%>%
-         dplyr::mutate (J.s.m2 = uW.cm2 *1e-2)%>%
-         dplyr::mutate (umolphotones.s.m2 = (lmb.2 -lambda)*(umolphotones_nm.s.m2))
+                     dplyr::filter (lambda != max(lambda)) %>%
+                     dplyr::mutate (lmb.2 = dt.x2.band$lambda) %>%
+                     dplyr::mutate (uW_nm.cm2.2 = dt.x2.band$uW_nm.cm2)%>%
+                     dplyr::mutate (uW.cm2 = (lmb.2 - lambda) * uW_nm.cm2.2) %>%
+                     dplyr::select (bandwidth, punto,lambda,lmb.2 , everything())%>%
+                     dplyr::mutate (J.s.m2 = uW.cm2 *1e-2)%>%
+                     dplyr::mutate (umolphotones.s.m2 = (lmb.2 -lambda)*(umolphotones_nm.s.m2))
       
       
       write_delim (dt.x3.band, file = str_c ("./Data/procdata/irradiance_",id.s, "_", filt.band,"_", px,".txt" ), 
@@ -230,15 +233,15 @@ run_spectrum <-  function ( dt = NULL, lambdas = NULL, id.survey=NULL, px = NULL
    
    
    df.intervalo <- df.intervalo %>%
-      dplyr::mutate (punto = px)%>%
-      dplyr::select (punto, everything())
+                   dplyr::mutate (punto = px)%>%
+                   dplyr::select (punto, everything())
    
    
    df.intervalo <- df.intervalo  %>%
-      dplyr::mutate (PPFD = round (PPFD, digits = 2)) %>%
-      dplyr::mutate (Ee =  round (Ee, digits = 2)) %>%                
-      dplyr::mutate (QI =  round (QI, digits = 2)) %>% 
-      dplyr::mutate (power =  round (power, digits = 2))
+                   dplyr::mutate (PPFD = round (PPFD, digits = 2)) %>%
+                   dplyr::mutate (Ee =  round (Ee, digits = 2)) %>%                
+                   dplyr::mutate (QI =  round (QI, digits = 2)) %>% 
+                   dplyr::mutate (power =  round (power, digits = 2))
    
    write_excel_csv2 (df.intervalo, file =str_c ("./Data/procdata/power_ppfd_",id.s,"_", px,".csv"),
                      na = "NA", append = FALSE, delim = ";")
